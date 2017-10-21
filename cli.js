@@ -1,45 +1,47 @@
 
 var inquirer = require("inquirer"); 
 var fs = require("fs");
-var Card = require("./card.js");
+var Deck = require("./deck.js");
 
-var remainingGuesses = 2;
+var remainingGuesses = 3;
 var count1 = 0;
 var count2 = 0;
-var deck1 = [];
-var deck2 = [];
 
-var card1 = new Card("\nWhat is 1? ", "it's 1");
-deck1.push(card1);
-var card2 = new Card("\nWhat is 2? ", "it's 2");
-deck1.push(card2);
-var card3 = new Card("\nWhat is 3? ", "it's 3");
-deck1.push(card3);
-var card4 = new Card("What is 4? ", "it's 4");
-deck2.push(card4);
-var card5 = new Card("What is 5? ", "it's 5");
-deck2.push(card5);
-var card6 = new Card("What is 6? ", "it's 6");
-deck2.push(card6);
+var deck1 = new Deck(1);
+deck1.addCard("\nCalifornia state capital is ? ", "Sacramento");
+deck1.addCard("\nFlorida state capital is ? ", "Tallahassee");
+deck1.addCard("\nArizona state capital is ? ", "Phoenix");
+deck1.addCard("\nMontana state capital is ? ", "Helena");
+deck1.addCard("\nRhode Island state capital is ? ", "Providence");
+
+var deck2 = new Deck(2);
+deck2.addCard("\nMississippi state abbreviation is ? ", "MS");
+deck2.addCard("\nMissouri state abbreviation is ? ", "MO");
+deck2.addCard("\nAlaska state abbreviation is ? ", "AK");
+deck2.addCard("\n Alabama state abbreviation is ? ", "AL");
+deck2.addCard("\nHawaii state abbreviation is ? ", "HI");
 
 var start = function() {
 	inquirer.prompt([{
     name: "command",
-    message: "\nChose a Deck to Play",
+    message: "\nChose a Deck or Exit",
     type: "list",
     choices: [{
         name: "State Capitals"
     }, {
         name: "State Abbreviations"
+    }, {
+        name: "Exit"
     }]
 }]).then(function(answer) {
     if (answer.command === "State Capitals") {
         runDeck1();
     } else if (answer.command === "State Abbreviations") {
         runDeck2();
+    } else if (answer.command === "Exit") {
+        exitApp();
     }
 });
-
 };
 
 var runDeck1 = function(){
@@ -61,12 +63,30 @@ var runDeck1 = function(){
 	});
 };
 
+var runDeck2 = function(){
+	inquirer.prompt([{
+	    name: "command",
+	    message: "\nOpen new card or Exit",
+	    type: "list",
+	    choices: [{
+	        name: "New Card"
+	    }, {
+	        name: "Exit"
+	    }]
+	}]).then(function(answer) {
+	    if (answer.command === "New Card") {
+	        openNew2();
+	    } else if (answer.command === "Exit") {
+	        exitApp();
+	    }
+	});
+};
 
 var openNew1 = function(){
-	if (deck1.length > count1) {
+	if (deck1.cards.length > count1) {
 		inquirer.prompt([{
 		    name: "command",
-		    message: deck1[count1].front,
+		    message: deck1.cards[count1].front,
 		    type: "list",
 		    choices: [{
 		        name: "Answer"
@@ -84,25 +104,48 @@ var openNew1 = function(){
 		console.log("\nThe Deck is finished");
 		start();
 	}
+};
 
+var openNew2 = function(){
+	if (deck2.cards.length > count2) {
+		inquirer.prompt([{
+		    name: "command",
+		    message: deck2.cards[count2].front,
+		    type: "list",
+		    choices: [{
+		        name: "Answer"
+		    }, {
+		        name: "Flip"
+		    }]
+		}]).then(function(answer) {
+		    if (answer.command === "Answer") {
+		        answerNew2();
+		    } else if (answer.command === "Flip") {
+		        flip2();
+		    }
+		});
+	} else {
+		console.log("\nThe Deck is finished");
+		start();
+	}
 };
 
 var answerNew1 = function () {
-	if (count1 < 3 ){
+	if (count1 < 5 ){
 		inquirer.prompt([
 			{
 				type: "input",
-				message: deck1[count1].front,
+				message: deck1.cards[count1].front,
 				name: "response"
 			}
 		]).then(function(answers) {
-			if (answers.response === deck1[count1].back){
+			if (answers.response === deck1.cards[count1].back){
 			console.log("\n");
 			console.log("Correct!");
-			console.log("\n");
 			console.log("You Have " + remainingGuesses+ " remaining guesses.");
 			}
 			else {
+				console.log("\n");
 				console.log("Incorrect!");
 				remainingGuesses--;
 				console.log("You Have " + remainingGuesses+ " remaining guesses.");
@@ -110,7 +153,7 @@ var answerNew1 = function () {
 					console.log("\n");
 					console.log("Game Over.");
 					console.log("\n");
-					remainingGuesses = 2;
+					remainingGuesses = 3;
 					count1 = 0;
 					return start();
 				}
@@ -125,15 +168,58 @@ var answerNew1 = function () {
 	}	
 };
 
+var answerNew2 = function () {
+	if (count2 < 5 ){
+		inquirer.prompt([
+			{
+				type: "input",
+				message: deck2.cards[count2].front,
+				name: "response"
+			}
+		]).then(function(answers) {
+			if (answers.response === deck2.cards[count2].back){
+			console.log("\n");
+			console.log("Correct!");
+			console.log("You Have " + remainingGuesses + " remaining guesses.");
+			}
+			else {
+				console.log("\n");
+				console.log("Incorrect!");
+				remainingGuesses--;
+				console.log("You Have " + remainingGuesses + " remaining guesses.");
+				if(remainingGuesses ===0){
+					console.log("\n");
+					console.log("Game Over.");
+					console.log("\n");
+					remainingGuesses = 3;
+					count2 = 0;
+					return start();
+				}
+			}
+		count2++;
+		runDeck2();
+		});
+	}
+	else {
+		console.log("end of deck 2");
+		start();
+	}	
+};
+
 var flip1 = function () {
-	console.log(deck1[count1].back);
+	console.log(deck1.cards[count1].back);
 	count1++;
-	openNew1();
+	runDeck1();
+};
+
+var flip2 = function () {
+	console.log(deck2.cards[count2].back);
+	count2++;
+	runDeck2();
 };
 
 var exitApp = function () {
-	console.log("Thanks for playing! Goodbuy!");
-
+	console.log("\nThanks for playing!" + "\nGoodbuy!");
 	return
 };
 
