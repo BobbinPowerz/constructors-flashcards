@@ -1,4 +1,4 @@
-
+//creating constructor for the deck and exporting the deck
 var Card = require('./card.js');
 var Deck = function(name){
     this.name = name;
